@@ -32,11 +32,15 @@ ionicApp.controller("ExampleController", function($scope, $cordovaSocialSharing)
     });
   };
 
-  $scope.shareViaFacebook = function(message, image, link) {
-    $cordovaSocialSharing.canShareVia("facebook", message, "Share to FB", image, link).then(function(result) {
+  $scope.shareViaFacebook = function(message, image, link, runsOnAndroid) {
+    var canShareVia1stParam = 'facebook';
+    if (!runsOnAndroid){
+      canShareVia1stParam = 'com.apple.social.' + canShareVia1stParam;
+    }
+    $cordovaSocialSharing.canShareVia(canShareVia1stParam, message, "Share to FB", image, link).then(function(result) {
       $cordovaSocialSharing.shareViaFacebook(message, image, link);
     }, function(error) {
-      alert("Cannot share on Twitter");
+      alert("Cannot share on Facebook");
     });
   };
 
