@@ -25,7 +25,7 @@ ionicApp.controller("ExampleController", function($scope, $cordovaSocialSharing)
   };
 
   $scope.shareViaTwitter = function(message, image, link) {
-    $cordovaSocialSharing.canShareVia("twitter", message, image, link).then(function(result) {
+    $cordovaSocialSharing.canShareVia("twitter", message, "Share to Twitter", image, link).then(function(result) {
       $cordovaSocialSharing.shareViaTwitter(message, image, link);
     }, function(error) {
       alert("Cannot share on Twitter");
@@ -33,10 +33,10 @@ ionicApp.controller("ExampleController", function($scope, $cordovaSocialSharing)
   };
 
   $scope.shareViaFacebook = function(message, image, link) {
-    $cordovaSocialSharing.canShareVia("facebook", message, image, link).then(function(result) {
+    $cordovaSocialSharing.canShareVia("facebook", message, "Share to FB", image, link).then(function(result) {
       $cordovaSocialSharing.shareViaFacebook(message, image, link);
     }, function(error) {
-      alert("Cannot share on Twitter");
+      alert("Cannot share on Facebook");
     });
   };
 
