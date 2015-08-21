@@ -9,10 +9,6 @@
                 "parents": {
                     "/*": [
                         {
-                            "xml": "<feature name=\"Keyboard\"><param name=\"ios-package\" onload=\"true\" value=\"IonicKeyboard\" /></feature>",
-                            "count": 1
-                        },
-                        {
                             "xml": "<feature name=\"Console\"><param name=\"ios-package\" value=\"CDVLogger\" /></feature>",
                             "count": 1
                         },
@@ -26,6 +22,10 @@
                         },
                         {
                             "xml": "<feature name=\"SocialSharing\"><param name=\"ios-package\" value=\"SocialSharing\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Keyboard\"><param name=\"ios-package\" onload=\"true\" value=\"IonicKeyboard\" /></feature>",
                             "count": 1
                         }
                     ]
@@ -56,9 +56,6 @@
         }
     },
     "installed_plugins": {
-        "com.ionic.keyboard": {
-            "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
-        },
         "cordova-plugin-console": {
             "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
         },
@@ -72,6 +69,12 @@
             "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
         },
         "nl.x-services.plugins.socialsharing": {
+            "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
+        },
+        "com.ionic.keyboard": {
+            "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
+        },
+        "cordova-plugin-crosswalk-webview": {
             "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
         }
     },

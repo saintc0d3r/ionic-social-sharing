@@ -149,18 +149,6 @@ public class CordovaPlugin {
     }
 
     /**
-     * Called when the activity is becoming visible to the user.
-     */
-    public void onStart() {
-    }
-
-    /**
-     * Called when the activity is no longer visible to the user.
-     */
-    public void onStop() {
-    }
-
-    /**
      * Called when the activity receives a new intent.
      */
     public void onNewIntent(Intent intent) {

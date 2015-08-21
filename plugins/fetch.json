@@ -17,8 +17,10 @@
     },
     "cordova-plugin-whitelist": {
         "source": {
-            "type": "registry",
-            "id": "cordova-plugin-whitelist"
+            "type": "git",
+            "url": "https://github.com/apache/cordova-plugin-whitelist.git",
+            "subdir": ".",
+            "ref": "r1.0.0"
         },
         "is_top_level": true,
         "variables": {}
@@ -35,15 +37,29 @@
         "source": {
             "type": "registry",
             "id": "com.ionic.keyboard"
-        },
-        "is_top_level": true,
-        "variables": {}
+        }
     },
     "nl.x-services.plugins.socialsharing": {
         "source": {
             "type": "git",
             "url": "https://github.com/EddyVerbruggen/SocialSharing-PhoneGap-Plugin.git",
             "subdir": "."
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-crosswalk-webview": {
+        "source": {
+            "type": "local",
+            "path": "engine/cordova-crosswalk-engine-c0.7.1"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "org.apache.cordova.splashscreen": {
+        "source": {
+            "type": "registry",
+            "id": "org.apache.cordova.splashscreen"
         },
         "is_top_level": true,
         "variables": {}

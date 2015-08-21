@@ -3,7 +3,7 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-var ionicApp = angular.module('starter', ['ionic', 'ngCordova']);
+var ionicApp = angular.module('ionic_social_sharing', ['ionic', 'ngCordova', 'ionic_social_sharing.controllers']);
 
 ionicApp.run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -18,7 +18,7 @@ ionicApp.run(function($ionicPlatform) {
   });
 });
 
-ionicApp.controller("ExampleController", function($scope, $cordovaSocialSharing) {
+ionicApp.controller("MainController", function($scope, $cordovaSocialSharing) {
 
   $scope.shareAnywhere = function() {
     $cordovaSocialSharing.share("Welcome to Dota 2's blog.", "Dota 2 Blog", "http://cdn.akamai.steamstatic.com/steam/apps/570/header.jpg?t=1434653483", "http://blog.dota2.com/");

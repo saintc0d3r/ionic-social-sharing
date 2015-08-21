@@ -265,28 +265,6 @@ public class PluginManager {
     }
 
     /**
-     * Called when the activity is becoming visible to the user.
-     */
-    public void onStart() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onStart();
-            }
-        }
-    }
-
-    /**
-     * Called when the activity is no longer visible to the user.
-     */
-    public void onStop() {
-        for (CordovaPlugin plugin : this.pluginMap.values()) {
-            if (plugin != null) {
-                plugin.onStop();
-            }
-        }
-    }
-
-    /**
      * The final call you receive before your activity is destroyed.
      */
     public void onDestroy() {

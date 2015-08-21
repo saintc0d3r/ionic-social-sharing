@@ -27,6 +27,10 @@
                         {
                             "xml": "<feature name=\"SocialSharing\"><param name=\"android-package\" value=\"nl.xservices.plugins.SocialSharing\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<preference name=\"webView\" value=\"org.crosswalk.engine.XWalkWebViewEngine\" />",
+                            "count": 1
                         }
                     ]
                 }
@@ -60,6 +64,9 @@
             "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
         },
         "nl.x-services.plugins.socialsharing": {
+            "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
+        },
+        "cordova-plugin-crosswalk-webview": {
             "PACKAGE_NAME": "com.ionicframework.socialsharing579931"
         }
     },

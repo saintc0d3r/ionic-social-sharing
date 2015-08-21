@@ -1,5 +1,5 @@
 // Platform: android
-// 2c29e187e4206a6a77fba940ef6f77aef5c7eb8c
+// fc4db9145934bd0053161cbf9ffc0caf83b770c6
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var PLATFORM_VERSION_BUILD_LABEL = '4.1.1';
+var PLATFORM_VERSION_BUILD_LABEL = '4.0.0-dev';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
@@ -101,14 +101,9 @@ if (typeof module === "object" && typeof require === "function") {
 // file: src/cordova.js
 define("cordova", function(require, exports, module) {
 
-if(window.cordova){
-    throw new Error("cordova already defined");
-}
-
 
 var channel = require('cordova/channel');
 var platform = require('cordova/platform');
-
 
 /**
  * Intercept calls to addEventListener + removeEventListener and handle deviceready,
@@ -328,7 +323,7 @@ module.exports = cordova;
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/nativeapiprovider.js
+// file: src/android/android/nativeapiprovider.js
 define("cordova/android/nativeapiprovider", function(require, exports, module) {
 
 /**
@@ -351,7 +346,7 @@ module.exports = {
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/android/promptbasednativeapi.js
+// file: src/android/android/promptbasednativeapi.js
 define("cordova/android/promptbasednativeapi", function(require, exports, module) {
 
 /**
@@ -376,6 +371,7 @@ module.exports = {
 // file: src/common/argscheck.js
 define("cordova/argscheck", function(require, exports, module) {
 
+var exec = require('cordova/exec');
 var utils = require('cordova/utils');
 
 var moduleExports = module.exports;
@@ -860,7 +856,7 @@ module.exports = channel;
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/exec.js
+// file: src/android/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 /**
@@ -895,7 +891,11 @@ var cordova = require('cordova'),
         // For the ONLINE_EVENT to be viable, it would need to intercept all event
         // listeners (both through addEventListener and window.ononline) as well
         // as set the navigator property itself.
-        ONLINE_EVENT: 2
+        ONLINE_EVENT: 2,
+        // Uses reflection to access private APIs of the WebView that can send JS
+        // to be executed.
+        // Requires Android 3.2.4 or above.
+        PRIVATE_API: 3
     },
     jsToNativeBridgeMode,  // Set lazily.
     nativeToJsBridgeMode = nativeToJsModes.ONLINE_EVENT,
@@ -1229,7 +1229,6 @@ if (!window.console.warn) {
 // Register pause, resume and deviceready channels as events on document.
 channel.onPause = cordova.addDocumentEventHandler('pause');
 channel.onResume = cordova.addDocumentEventHandler('resume');
-channel.onActivated = cordova.addDocumentEventHandler('activated');
 channel.onDeviceReady = cordova.addStickyDocumentEventHandler('deviceready');
 
 // Listen for DOMContentLoaded and notify our channel subscribers.
@@ -1357,7 +1356,6 @@ if (!window.console.warn) {
 // Register pause, resume and deviceready channels as events on document.
 channel.onPause = cordova.addDocumentEventHandler('pause');
 channel.onResume = cordova.addDocumentEventHandler('resume');
-channel.onActivated = cordova.addDocumentEventHandler('activated');
 channel.onDeviceReady = cordova.addStickyDocumentEventHandler('deviceready');
 
 // Listen for DOMContentLoaded and notify our channel subscribers.
@@ -1501,7 +1499,7 @@ exports.reset();
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/platform.js
+// file: src/android/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 module.exports = {
@@ -1577,7 +1575,7 @@ function onMessageFromNative(msg) {
 
 });
 
-// file: /Users/steveng/repo/cordova/cordova-android/cordova-js-src/plugin/android/app.js
+// file: src/android/plugin/android/app.js
 define("cordova/plugin/android/app", function(require, exports, module) {
 
 var exec = require('cordova/exec');
@@ -1672,10 +1670,6 @@ module.exports = {
 
 // file: src/common/pluginloader.js
 define("cordova/pluginloader", function(require, exports, module) {
-
-/*
-    NOTE: this file is NOT used when we use the browserify workflow
-*/
 
 var modulemapper = require('cordova/modulemapper');
 var urlutil = require('cordova/urlutil');
@@ -1865,14 +1859,15 @@ utils.typeName = function(val) {
 /**
  * Returns an indication of whether the argument is an array or not
  */
-utils.isArray = Array.isArray ||
-                function(a) {return utils.typeName(a) == 'Array';};
+utils.isArray = function(a) {
+    return utils.typeName(a) == 'Array';
+};
 
 /**
  * Returns an indication of whether the argument is a Date or not
  */
 utils.isDate = function(d) {
-    return (d instanceof Date);
+    return utils.typeName(d) == 'Date';
 };
 
 /**
@@ -1906,24 +1901,16 @@ utils.clone = function(obj) {
  * Returns a wrapped version of the function
  */
 utils.close = function(context, func, params) {
-    return function() {
-        var args = params || arguments;
-        return func.apply(context, args);
-    };
-};
-
-//------------------------------------------------------------------------------
-function UUIDcreatePart(length) {
-    var uuidpart = "";
-    for (var i=0; i<length; i++) {
-        var uuidchar = parseInt((Math.random() * 256), 10).toString(16);
-        if (uuidchar.length == 1) {
-            uuidchar = "0" + uuidchar;
-        }
-        uuidpart += uuidchar;
+    if (typeof params == 'undefined') {
+        return function() {
+            return func.apply(context, arguments);
+        };
+    } else {
+        return function() {
+            return func.apply(context, params);
+        };
     }
-    return uuidpart;
-}
+};
 
 /**
  * Create a UUID
@@ -1936,7 +1923,6 @@ utils.createUUID = function() {
         UUIDcreatePart(6);
 };
 
-
 /**
  * Extends a child object from a parent object using classical inheritance
  * pattern.
@@ -1946,7 +1932,6 @@ utils.extend = (function() {
     var F = function() {};
     // extend Child from Parent
     return function(Child, Parent) {
-
         F.prototype = Parent.prototype;
         Child.prototype = new F();
         Child.__super__ = Parent.prototype;
@@ -1966,7 +1951,18 @@ utils.alert = function(msg) {
 };
 
 
-
+//------------------------------------------------------------------------------
+function UUIDcreatePart(length) {
+    var uuidpart = "";
+    for (var i=0; i<length; i++) {
+        var uuidchar = parseInt((Math.random() * 256), 10).toString(16);
+        if (uuidchar.length == 1) {
+            uuidchar = "0" + uuidchar;
+        }
+        uuidpart += uuidchar;
+    }
+    return uuidpart;
+}
 
 
 });

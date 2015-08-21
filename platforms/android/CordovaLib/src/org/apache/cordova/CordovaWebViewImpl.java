@@ -48,7 +48,8 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
     public static final String TAG = "CordovaWebViewImpl";
 
-    private PluginManager pluginManager;
+    // Public for backwards-compatibility :(
+    public PluginManager pluginManager;
 
     protected final CordovaWebViewEngine engine;
     private CordovaInterface cordova;
@@ -61,7 +62,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
     private CoreAndroid appPlugin;
     private NativeToJsMessageQueue nativeToJsMessageQueue;
     private EngineClient engineClient = new EngineClient();
-    private boolean hasPausedEver;
+    private Context context;
 
     // The URL passed to loadUrl(), not necessarily the URL of the current page.
     String loadedUrl;
@@ -83,10 +84,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
         }
     }
 
-    public CordovaWebViewImpl(CordovaWebViewEngine cordovaWebViewEngine) {
+    public CordovaWebViewImpl(Context context, CordovaWebViewEngine cordovaWebViewEngine) {
+        this.context = context;
         this.engine = cordovaWebViewEngine;
     }
-
     // Convenience method for when creating programmatically (not from Config.xml).
     public void init(CordovaInterface cordova) {
         init(cordova, new ArrayList<PluginEntry>(), new CordovaPreferences());
@@ -114,7 +115,6 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         pluginManager.addService(CoreAndroid.PLUGIN_NAME, "org.apache.cordova.CoreAndroid");
         pluginManager.init();
-
     }
 
     @Override
@@ -426,9 +426,9 @@ public class CordovaWebViewImpl implements CordovaWebView {
         if (!isInitialized()) {
             return;
         }
-        hasPausedEver = true;
-        pluginManager.onPause(keepRunning);
+        LOG.d(TAG, "Handle the pause");
         sendJavascriptEvent("pause");
+        pluginManager.onPause(keepRunning);
 
         // If app doesn't want to run in background
         if (!keepRunning) {
@@ -444,26 +444,10 @@ public class CordovaWebViewImpl implements CordovaWebView {
 
         // Resume JavaScript timers. This affects all webviews within the app!
         engine.setPaused(false);
+        sendJavascriptEvent("resume");
         this.pluginManager.onResume(keepRunning);
-        // To be the same as other platforms, fire this event only when resumed after a "pause".
-        if (hasPausedEver) {
-            sendJavascriptEvent("resume");
-        }
     }
-    @Override
-    public void handleStart() {
-        if (!isInitialized()) {
-            return;
-        }
-        pluginManager.onStart();
-    }
-    @Override
-    public void handleStop() {
-        if (!isInitialized()) {
-            return;
-        }
-        pluginManager.onStop();
-    }
+
     @Override
     public void handleDestroy() {
         if (!isInitialized()) {
@@ -475,8 +459,7 @@ public class CordovaWebViewImpl implements CordovaWebView {
         // Forward to plugins
         this.pluginManager.onDestroy();
 
-        // TODO: about:blank is a bit special (and the default URL for new frames)
-        // We should use a blank data: url instead so it's more obvious
+        // Load blank page so that JavaScript onunload is called
         this.loadUrl("about:blank");
 
         // TODO: Should not destroy webview until after about:blank is done loading.
@@ -589,6 +572,14 @@ public class CordovaWebViewImpl implements CordovaWebView {
                 }
             }
             return null;
+        }
+
+        @Override
+        public void onScrollChanged(int l, int t, int oldl, int oldt) {
+            // TODO: scrolling is perf-sensitive, so we'd probably be better to no use postMessage
+            // here, and also not to create any new objects.
+            ScrollEvent myEvent = new ScrollEvent(l, t, oldl, oldt, getView());
+            pluginManager.postMessage("onScrollChanged", myEvent);
         }
 
         @Override

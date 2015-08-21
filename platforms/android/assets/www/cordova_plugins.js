@@ -56,7 +56,8 @@ module.exports.metadata =
     "cordova-plugin-device": "1.0.1",
     "cordova-plugin-splashscreen": "2.1.0",
     "cordova-plugin-whitelist": "1.0.0",
-    "nl.x-services.plugins.socialsharing": "4.3.19"
+    "nl.x-services.plugins.socialsharing": "4.3.19",
+    "cordova-plugin-crosswalk-webview": "1.0.1-dev"
 }
 // BOTTOM OF METADATA
 });

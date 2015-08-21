@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -83,14 +82,12 @@ public class CordovaActivity extends Activity {
     private static int ACTIVITY_STARTING = 0;
     private static int ACTIVITY_RUNNING = 1;
     private static int ACTIVITY_EXITING = 2;
+    private int activityState = 0;  // 0=starting, 1=running (after 1st resume), 2=shutting down
 
     // Keep app running when pause is received. (default = true)
     // If true, then the JavaScript and native code continue to run in the background
     // when another application (activity) is started.
     protected boolean keepRunning = true;
-
-    // Flag to keep immersive mode if set to fullscreen
-    protected boolean immersiveMode;
 
     // Read from config.xml:
     protected CordovaPreferences preferences;
@@ -112,23 +109,15 @@ public class CordovaActivity extends Activity {
         {
             getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
-
+        
         if(preferences.getBoolean("SetFullscreen", false))
         {
             Log.d(TAG, "The SetFullscreen configuration is deprecated in favor of Fullscreen, and will be removed in a future version.");
-            preferences.set("Fullscreen", true);
-        }
-        if(preferences.getBoolean("Fullscreen", false))
-        {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            {
-                immersiveMode = true;
-            }
-            else
-            {
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
+        } else if (preferences.getBoolean("Fullscreen", false)) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -149,7 +138,7 @@ public class CordovaActivity extends Activity {
         if (!appView.isInitialized()) {
             appView.init(cordovaInterface, pluginEntries, preferences);
         }
-        cordovaInterface.onCordovaInit(appView.getPluginManager());
+        cordovaInterface.setPluginManager(appView.getPluginManager());
 
         // Wire the hardware volume controls to control media if desired.
         String volumePref = preferences.getString("DefaultVolumeStream", "");
@@ -164,6 +153,7 @@ public class CordovaActivity extends Activity {
         parser.parse(this);
         preferences = parser.getPreferences();
         preferences.setPreferencesBundle(getIntent().getExtras());
+        preferences.copyIntoIntentExtras(this);
         launchUrl = parser.getLaunchUrl();
         pluginEntries = parser.getPluginEntries();
         Config.parser = parser;
@@ -195,7 +185,7 @@ public class CordovaActivity extends Activity {
      * Override this to customize the webview that is used.
      */
     protected CordovaWebView makeWebView() {
-        return new CordovaWebViewImpl(makeWebViewEngine());
+        return new CordovaWebViewImpl(this, makeWebViewEngine());
     }
 
     protected CordovaWebViewEngine makeWebViewEngine() {
@@ -234,11 +224,13 @@ public class CordovaActivity extends Activity {
         super.onPause();
         LOG.d(TAG, "Paused the activity.");
 
+        // Don't process pause if shutting down, since onDestroy() will be called
+        if (this.activityState == ACTIVITY_EXITING) {
+            return;
+        }
+
         if (this.appView != null) {
-            // CB-9382 If there is an activity that started for result and main activity is waiting for callback
-            // result, we shoudn't stop WebView Javascript timers, as activity for result might be using them
-            boolean keepRunning = this.keepRunning || this.cordovaInterface.activityResultCallback != null;
-            this.appView.handlePause(keepRunning);
+            this.appView.handlePause(this.keepRunning);
         }
     }
 
@@ -261,6 +253,11 @@ public class CordovaActivity extends Activity {
         super.onResume();
         LOG.d(TAG, "Resumed the activity.");
         
+        if (this.activityState == ACTIVITY_STARTING) {
+            this.activityState = ACTIVITY_RUNNING;
+            return;
+        }
+
         if (this.appView == null) {
             return;
         }
@@ -269,34 +266,6 @@ public class CordovaActivity extends Activity {
         this.getWindow().getDecorView().requestFocus();
 
         this.appView.handleResume(this.keepRunning);
-    }
-
-    /**
-     * Called when the activity is no longer visible to the user.
-     */
-    @Override
-    protected void onStop() {
-        super.onStop();
-        LOG.d(TAG, "Stopped the activity.");
-
-        if (this.appView == null) {
-            return;
-        }
-        this.appView.handleStop();
-    }
-
-    /**
-     * Called when the activity is becoming visible to the user.
-     */
-    @Override
-    protected void onStart() {
-        super.onStart();
-        LOG.d(TAG, "Started the activity.");
-
-        if (this.appView == null) {
-            return;
-        }
-        this.appView.handleStart();
     }
 
     /**
@@ -310,24 +279,22 @@ public class CordovaActivity extends Activity {
         if (this.appView != null) {
             appView.handleDestroy();
         }
+        else {
+            this.activityState = ACTIVITY_EXITING; 
+        }
     }
 
     /**
-     * Called when view focus is changed
+     * End this activity by calling finish for activity
      */
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus && immersiveMode) {
-            final int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+    public void endActivity() {
+        finish();
+    }
 
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-        }
+    @Override
+    public void finish() {
+        this.activityState = ACTIVITY_EXITING;
+        super.finish();
     }
 
     @Override
@@ -405,7 +372,7 @@ public class CordovaActivity extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                     if (exit) {
-                                        finish();
+                                        me.endActivity();
                                     }
                                 }
                             });
@@ -453,6 +420,10 @@ public class CordovaActivity extends Activity {
      * @return              Object or null
      */
     public Object onMessage(String id, Object data) {
+        if (!"onScrollChanged".equals(id)) {
+            LOG.d(TAG, "onMessage(" + id + "," + data + ")");
+        }
+
         if ("onReceivedError".equals(id)) {
             JSONObject d = (JSONObject) data;
             try {
@@ -461,15 +432,15 @@ public class CordovaActivity extends Activity {
                 e.printStackTrace();
             }
         } else if ("exit".equals(id)) {
-            finish();
+            this.endActivity();
         }
         return null;
     }
 
     protected void onSaveInstanceState(Bundle outState)
     {
-        cordovaInterface.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
+        cordovaInterface.onSaveInstanceState(outState);
     }
 
     /**
