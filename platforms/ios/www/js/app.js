@@ -33,8 +33,9 @@ ionicApp.controller("ExampleController", function($scope, $cordovaSocialSharing)
   };
 
   $scope.shareViaFacebook = function(message, image, link, runsOnAndroid) {
+    var devicePlatform = device.platform;
     var canShareVia1stParam = 'facebook';
-    if (!runsOnAndroid){
+    if (devicePlatform == 'iOS'){
       canShareVia1stParam = 'com.apple.social.' + canShareVia1stParam;
     }
     $cordovaSocialSharing.canShareVia(canShareVia1stParam, message, "Share to FB", image, link).then(function(result) {

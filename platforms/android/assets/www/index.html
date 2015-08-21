@@ -31,12 +31,7 @@
       <ion-content ng-controller="ExampleController">
         <button class="button" ng-click="shareAnywhere()">Share anywhere</button>
         <button class="button" ng-click="shareViaTwitter('Welcome to Dota 2 blog.', null, 'http://blog.dota2.com/')">Share on Twitter</button>
-
-        <!-- Share to facebook on Android -->
-        <button class="button" ng-click="shareViaFacebook(null, null, 'http://blog.dota2.com/', true)">Share on Facebook (for Android)</button>
-
-        <!-- Share to facebook on ios -->
-        <button class="button" ng-click="shareViaFacebook('Welcome to Dota 2 blog.', 'http://tinyurl.com/qhwnwfw', 'http://blog.dota2.com/', false)">Share on Facebook (for iOS)</button>
+        <button class="button" ng-click="shareViaFacebook('Welcome to Dota 2 blog.', 'http://tinyurl.com/qhwnwfw', 'http://blog.dota2.com/', false)">Share on Facebook</button>
       </ion-content>
     </ion-pane>
   </body>
