@@ -20,15 +20,16 @@
     <script src="cordova.js"></script>
 
     <!-- your app's js -->
+    <script src="js/controllers.js"></script>
     <script src="js/app.js"></script>
   </head>
-  <body ng-app="starter" class="platform-ios platform-cordova platform-webview">
+  <body ng-app="ionic_social_sharing" class="platform-ios platform-cordova platform-webview">
 
     <ion-pane>
       <ion-header-bar class="bar-stable">
         <h1 class="title">Ionic Blank Starter</h1>
       </ion-header-bar>
-      <ion-content ng-controller="ExampleController">
+      <ion-content ng-controller="MainController">
         <button class="button" ng-click="shareAnywhere()">Share anywhere</button>
         <button class="button" ng-click="shareViaTwitter('Welcome to Dota 2 blog.', null, 'http://blog.dota2.com/')">Share on Twitter</button>
         <button class="button" ng-click="shareViaFacebook('Welcome to Dota 2 blog.', 'http://tinyurl.com/qhwnwfw', 'http://blog.dota2.com/', false)">Share on Facebook</button>
