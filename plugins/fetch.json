@@ -17,10 +17,8 @@
     },
     "cordova-plugin-whitelist": {
         "source": {
-            "type": "git",
-            "url": "https://github.com/apache/cordova-plugin-whitelist.git",
-            "subdir": ".",
-            "ref": "r1.0.0"
+            "type": "registry",
+            "id": "cordova-plugin-whitelist"
         },
         "is_top_level": true,
         "variables": {}
@@ -50,8 +48,8 @@
     },
     "cordova-plugin-crosswalk-webview": {
         "source": {
-            "type": "local",
-            "path": "engine/cordova-crosswalk-engine-c0.7.1"
+            "type": "registry",
+            "id": "cordova-plugin-crosswalk-webview"
         },
         "is_top_level": true,
         "variables": {}

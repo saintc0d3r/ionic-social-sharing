@@ -32,7 +32,7 @@ ionicApp.controller("MainController", function($scope, $cordovaSocialSharing) {
     });
   };
 
-  $scope.shareViaFacebook = function(message, image, link, runsOnAndroid) {
+  $scope.shareViaFacebook = function(message, image, link) {
     var devicePlatform = device.platform;
     var canShareVia1stParam = 'facebook';
     if (devicePlatform == 'iOS'){
